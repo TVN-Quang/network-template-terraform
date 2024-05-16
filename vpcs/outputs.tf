@@ -5,7 +5,3 @@ output "azs_name" {
 output "vpc" {
   value = module.vpc
 }
-
-# output "vpc_endpoints" {
-#   value = local.endpoints
-# }

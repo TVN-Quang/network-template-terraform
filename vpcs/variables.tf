@@ -61,8 +61,17 @@ variable "vpcs" {
 
 variable "vpc_endpoints" {
   type = map(object({
-    endpoints = map(any)
+    endpoints = map(object({
+      service             = string
+      service_type        = optional(string)
+      route_table_name    = optional(list(string))
+      subnet_names        = optional(list(string))
+      private_dns_enabled = optional(bool)
+      policy              = optional(string)
+      tags                = optional(map(string))
+    }))
   }))
+  description = "Map of VPC endpoints"
 }
 
 # variable "create_vpc" {
