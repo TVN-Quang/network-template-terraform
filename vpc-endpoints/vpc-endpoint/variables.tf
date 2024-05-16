@@ -12,8 +12,16 @@ variable "vpc_id" {
 
 variable "endpoints" {
   description = "A map of interface and/or gateway endpoints containing their properties and configurations"
-  type        = any
-  default     = {}
+  type = map(object({
+    service             = string
+    service_type        = optional(string)
+    route_table_name    = optional(list(string))
+    subnet_names        = optional(list(string))
+    private_dns_enabled = optional(bool)
+    policy              = optional(string)
+    tags                = optional(map(string))
+  }))
+  default = {}
 }
 
 variable "security_group_ids" {

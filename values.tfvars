@@ -43,15 +43,19 @@ vpc_endpoints = {
         service          = "dynamodb"
         service_type     = "Gateway"
         route_table_name = ["*network-eks-subnet-1a"]
-        # route_table_ids  = []
-        tags             = { Name = "dynamodb-vpc-endpoint" }
+        tags = { Name = "dynamodb-vpc-endpoint" }
       },
       s3 = {
         service          = "s3"
         service_type     = "Gateway"
         route_table_name = ["*network-eks-subnet-*"]
-        # route_table_ids  = []
-        tags             = { Name = "s3-vpc-endpoint" }
+        tags = { Name = "s3-vpc-endpoint" }
+      },
+      sns = {
+        service    = "sns"
+        service_type = "Interface"
+        subnet_names = ["network-eks-subnet-1a", "network-eks-subnet-1b"]
+        tags       = { Name = "sns-vpc-endpoint" }
       },
     }
   }

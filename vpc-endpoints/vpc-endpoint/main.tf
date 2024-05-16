@@ -9,13 +9,26 @@ locals {
 }
 
 data "aws_route_tables" "this" {
-    for_each = local.endpoints
-    vpc_id = var.vpc_id
+  for_each = {for k,v in local.endpoints : k  => v if v.service_type == "Gateway"} 
+  vpc_id   = var.vpc_id
 
-    filter {
-      name = "tag:Name"
-      values = each.value.route_table_name
-    }
+  filter {
+    name   = "tag:Name"
+    values = each.value.route_table_name
+  }
+}
+
+data "aws_subnets" "this" {
+  for_each = {for k,v in local.endpoints : k  => v if v.service_type != "Gateway"} 
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+
+  filter {
+    name   = "tag:Name"
+    values = each.value.subnet_names
+  }
 }
 
 data "aws_vpc_endpoint_service" "this" {
@@ -39,7 +52,7 @@ resource "aws_vpc_endpoint" "this" {
   auto_accept       = try(each.value.auto_accept, null)
 
   security_group_ids  = try(each.value.service_type, "Interface") == "Interface" ? length(distinct(concat(local.security_group_ids, lookup(each.value, "security_group_ids", [])))) > 0 ? distinct(concat(local.security_group_ids, lookup(each.value, "security_group_ids", []))) : null : null
-  subnet_ids          = try(each.value.service_type, "Interface") == "Interface" ? distinct(concat(var.subnet_ids, lookup(each.value, "subnet_ids", []))) : null
+  subnet_ids          = try(each.value.service_type, "Interface") == "Interface" ? distinct(concat(var.subnet_ids, data.aws_subnets.this[each.key].ids)) : null
   route_table_ids     = try(each.value.service_type, "Interface") == "Gateway" ? data.aws_route_tables.this[each.key].ids : null
   policy              = try(each.value.policy, null)
   private_dns_enabled = try(each.value.service_type, "Interface") == "Interface" ? try(each.value.private_dns_enabled, null) : null
